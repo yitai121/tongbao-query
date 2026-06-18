@@ -3,15 +3,22 @@
 """
 import csv
 import io
+import math
 import threading
 import time
 from datetime import datetime
-from flask import Flask, render_template, request, jsonify
-from config import FLASK_HOST, FLASK_PORT, FLASK_DEBUG, SYNC_INTERVAL, SYSTEM_NAME
-from database import init_db, get_rewards_by_phone, get_total_reward_by_phone, get_stats, log_sync, upsert_reward, get_dashboard_data
+from flask import Flask, render_template, request, jsonify, session
+from config import FLASK_HOST, FLASK_PORT, FLASK_DEBUG, SYNC_INTERVAL, SYSTEM_NAME, SECRET_KEY
+from database import (
+    init_db, get_rewards_by_phone, get_total_reward_by_phone, get_stats,
+    log_sync, upsert_reward, get_dashboard_data, get_config, set_config,
+    get_all_configs, get_sync_logs, get_sync_log_count
+)
 from scraper import fetch_now
+from auth import check_credentials, is_logged_in, login_required, api_login_required
 
 app = Flask(__name__)
+app.secret_key = SECRET_KEY
 
 
 # ========== 自动同步线程 ==========
@@ -32,16 +39,111 @@ def index():
     return render_template("index.html", system_name=SYSTEM_NAME)
 
 
-@app.route("/dashboard")
-def dashboard():
-    """数据看板"""
-    return render_template("dashboard.html", system_name=SYSTEM_NAME)
+@app.route("/admin/login")
+def admin_login():
+    """管理员登录页"""
+    if is_logged_in():
+        return render_template("admin/index.html", system_name=SYSTEM_NAME)
+    return render_template("admin/login.html")
 
 
-# ========== API 路由 ==========
+@app.route("/admin")
+@login_required
+def admin_panel():
+    """管理员面板"""
+    return render_template("admin/index.html", system_name=SYSTEM_NAME)
+
+
+# ========== 管理员认证 API ==========
+@app.route("/api/admin/login", methods=["POST"])
+def api_admin_login():
+    """管理员登录API"""
+    data = request.get_json()
+    if not data:
+        return jsonify({"code": 400, "msg": "请求数据无效", "data": None})
+
+    username = data.get("username", "")
+    password = data.get("password", "")
+
+    if not username or not password:
+        return jsonify({"code": 400, "msg": "请输入用户名和密码", "data": None})
+
+    if check_credentials(username, password):
+        session["admin_logged_in"] = True
+        session.permanent = True
+        return jsonify({"code": 200, "msg": "登录成功", "data": None})
+    else:
+        return jsonify({"code": 401, "msg": "用户名或密码错误", "data": None})
+
+
+@app.route("/api/admin/logout", methods=["POST"])
+def api_admin_logout():
+    """管理员登出API"""
+    session.clear()
+    return jsonify({"code": 200, "msg": "已退出登录", "data": None})
+
+
+# ========== 管理员配置 API ==========
+@app.route("/api/admin/config", methods=["GET"])
+@api_login_required
+def api_get_config():
+    """获取系统配置"""
+    configs = get_all_configs()
+    return jsonify({"code": 200, "msg": "success", "data": configs})
+
+
+@app.route("/api/admin/config", methods=["POST"])
+@api_login_required
+def api_set_config():
+    """更新系统配置"""
+    data = request.get_json()
+    if not data:
+        return jsonify({"code": 400, "msg": "请求数据无效", "data": None})
+
+    descriptions = {
+        "system_name": "系统名称",
+        "doc_id": "文档ID",
+        "sheet_id": "工作表名称",
+        "phone_column": "手机号列号",
+        "reward_column": "奖励列号",
+        "sync_interval": "自动同步间隔（秒）",
+        "page_size": "每页记录数"
+    }
+
+    for key, value in data.items():
+        if key in descriptions:
+            set_config(key, str(value), descriptions[key])
+
+    return jsonify({"code": 200, "msg": "配置保存成功", "data": None})
+
+
+@app.route("/api/admin/sync/logs", methods=["GET"])
+@api_login_required
+def api_sync_logs():
+    """获取同步日志（分页）"""
+    page = request.args.get("page", 1, type=int)
+    per_page = request.args.get("per_page", 20, type=int)
+
+    logs = get_sync_logs(page, per_page)
+    total = get_sync_log_count()
+
+    return jsonify({
+        "code": 200,
+        "msg": "success",
+        "data": {
+            "logs": logs,
+            "total": total,
+            "page": page,
+            "per_page": per_page,
+            "total_pages": math.ceil(total / per_page) if per_page > 0 else 0
+        }
+    })
+
+
+# ========== 公共 API 路由 ==========
 @app.route("/api/query", methods=["GET"])
 def api_query():
-    """查询接口 - 根据手机号查询"""
+    """查询接口 - 根据手机号查询（支持分页）"""
     phone = request.args.get("phone", "").strip()
 
     if not phone:
@@ -50,19 +152,38 @@ def api_query():
     if not phone.isdigit() or len(phone) != 11:
         return jsonify({"code": 400, "msg": "手机号格式不正确", "data": None})
 
+    # 分页参数
+    page = request.args.get("page", 1, type=int)
+    per_page = request.args.get("per_page", 0, type=int)
+
+    # 如果未指定 per_page，从配置读取
+    if per_page <= 0:
+        per_page = int(get_config("page_size", "20"))
+
     # 查询明细
-    records = get_rewards_by_phone(phone)
+    all_records = get_rewards_by_phone(phone)
+    total = len(all_records)
+
+    # 分页
+    if per_page > 0:
+        start = (page - 1) * per_page
+        end = start + per_page
+        records = all_records[start:end]
+    else:
+        records = all_records
+
     # 查询汇总
     summary = get_total_reward_by_phone(phone)
 
-    if not records:
+    if not all_records:
         return jsonify({
             "code": 404,
             "msg": "未找到该手机号的记录",
             "data": {
                 "phone": phone,
                 "records": [],
-                "summary": {"total": 0, "days": 0}
+                "summary": {"total": 0, "days": 0},
+                "pagination": {"page": 1, "per_page": per_page, "total": 0, "total_pages": 0}
             }
         })
 
@@ -72,12 +193,19 @@ def api_query():
         "data": {
             "phone": phone,
             "records": records,
-            "summary": summary
+            "summary": summary,
+            "pagination": {
+                "page": page,
+                "per_page": per_page,
+                "total": total,
+                "total_pages": math.ceil(total / per_page) if per_page > 0 else 1
+            }
         }
     })
 
 
 @app.route("/api/sync", methods=["POST"])
+@api_login_required
 def api_sync():
     """手动同步接口"""
     try:
@@ -85,7 +213,7 @@ def api_sync():
         return jsonify({
             "code": 200,
             "msg": f"同步成功，共同步{count}条记录",
-            "data": {"count": count}
+            "data": {"record_count": count}
         })
     except Exception as e:
         return jsonify({
@@ -118,6 +246,7 @@ def api_dashboard():
 
 
 @app.route("/api/import", methods=["POST"])
+@api_login_required
 def api_import():
     """CSV文件导入接口"""
     if "file" not in request.files:
@@ -179,7 +308,7 @@ def api_import():
             "code": 200,
             "msg": msg,
             "data": {
-                "count": record_count,
+                "imported": record_count,
                 "errors": errors[:10]  # 最多返回10条错误
             }
         })

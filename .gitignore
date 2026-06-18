@@ -9,6 +9,7 @@ env/
 ENV/
 *.db
 *.sqlite3
+data/
 
 # IDE
 .vscode/

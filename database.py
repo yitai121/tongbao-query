@@ -48,6 +48,16 @@ def init_db():
         )
     """)
 
+    # 创建系统配置表
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS system_config (
+            key TEXT PRIMARY KEY,
+            value TEXT NOT NULL,
+            description TEXT,
+            updated_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
+        )
+    """)
+
     conn.commit()
     conn.close()
 
@@ -231,3 +241,70 @@ def get_dashboard_data():
         "distribution": distribution,
         "weekly_activity": weekly_activity
     }
+
+
+def get_config(key, default=None):
+    """获取系统配置"""
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT value FROM system_config WHERE key = ?", (key,))
+    row = cursor.fetchone()
+    conn.close()
+    return row["value"] if row else default
+
+
+def set_config(key, value, description=None):
+    """设置系统配置"""
+    conn = get_db()
+    cursor = conn.cursor()
+    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    if description is not None:
+        cursor.execute("""
+            INSERT INTO system_config (key, value, description, updated_at)
+            VALUES (?, ?, ?, ?)
+            ON CONFLICT(key) DO UPDATE SET value = ?, updated_at = ?
+        """, (key, value, description, now, value, now))
+    else:
+        cursor.execute("""
+            INSERT INTO system_config (key, value, updated_at)
+            VALUES (?, ?, ?)
+            ON CONFLICT(key) DO UPDATE SET value = ?, updated_at = ?
+        """, (key, value, now, value, now))
+    conn.commit()
+    conn.close()
+
+
+def get_all_configs():
+    """获取所有系统配置"""
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT key, value, description, updated_at FROM system_config ORDER BY key")
+    rows = cursor.fetchall()
+    conn.close()
+    return [dict(row) for row in rows]
+
+
+def get_sync_logs(page=1, per_page=20):
+    """分页获取同步日志"""
+    conn = get_db()
+    cursor = conn.cursor()
+    offset = (page - 1) * per_page
+    cursor.execute("""
+        SELECT id, sync_time, status, record_count, message
+        FROM sync_log
+        ORDER BY sync_time DESC
+        LIMIT ? OFFSET ?
+    """, (per_page, offset))
+    rows = cursor.fetchall()
+    conn.close()
+    return [dict(row) for row in rows]
+
+
+def get_sync_log_count():
+    """获取同步日志总数"""
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT COUNT(*) as count FROM sync_log")
+    row = cursor.fetchone()
+    conn.close()
+    return row["count"] if row else 0

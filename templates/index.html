@@ -25,61 +25,7 @@
                 <h1>{{ system_name }}</h1>
             </div>
             <p class="subtitle">实时同步 · 安全可靠 · 极速查询</p>
-            <div style="display: flex; gap: 12px; justify-content: center; margin-top: 16px;">
-                <a href="/dashboard" class="admin-btn" style="text-decoration: none; display: inline-flex; align-items: center;">
-                    <i class="fas fa-chart-line"></i> 数据看板
-                </a>
-                <button class="admin-btn" onclick="showImportModal()">
-                    <i class="fas fa-upload"></i> 管理员导入
-                </button>
-            </div>
         </header>
-
-        <!-- 导入弹窗 -->
-        <div id="importModal" class="modal hidden">
-            <div class="modal-overlay" onclick="hideImportModal()"></div>
-            <div class="modal-content glass">
-                <div class="modal-header">
-                    <h3><i class="fas fa-file-import"></i> 导入数据</h3>
-                    <button class="modal-close" onclick="hideImportModal()">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <div class="import-instructions">
-                        <h4><i class="fas fa-info-circle"></i> 导入说明</h4>
-                        <ol>
-                            <li>打开腾讯文档在线表格</li>
-                            <li>点击右上角「...」→「导出为CSV」</li>
-                            <li>选择导出的文件上传到下方</li>
-                        </ol>
-                        <p class="format-hint">
-                            <i class="fas fa-table"></i> 表格格式要求：第1列=手机号，第2列=通宝奖励
-                        </p>
-                    </div>
-                    <div class="upload-area" id="uploadArea">
-                        <input type="file" id="fileInput" accept=".csv,.txt" style="display:none" onchange="handleFileSelect(event)">
-                        <div class="upload-content" onclick="document.getElementById('fileInput').click()">
-                            <i class="fas fa-cloud-upload-alt"></i>
-                            <p>点击选择CSV文件</p>
-                            <span>或将文件拖拽到此处</span>
-                        </div>
-                        <div id="fileInfo" class="file-info hidden">
-                            <i class="fas fa-file-csv"></i>
-                            <span id="fileName"></span>
-                            <button onclick="clearFile()"><i class="fas fa-times"></i></button>
-                        </div>
-                    </div>
-                    <div id="importResult" class="import-result hidden"></div>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn-secondary" onclick="hideImportModal()">取消</button>
-                    <button class="btn-primary" id="importBtn" onclick="doImport()" disabled>
-                        <i class="fas fa-upload"></i> 开始导入
-                    </button>
-                </div>
-            </div>
-        </div>
 
         <!-- 搜索卡片 -->
         <div class="search-card glass">

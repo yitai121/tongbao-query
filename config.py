@@ -37,3 +37,8 @@ FLASK_DEBUG = os.getenv("FLASK_DEBUG", "false").lower() == "true"
 # ========== 系统配置 ==========
 SYSTEM_NAME = "通宝奖励查询系统"
 SYSTEM_VERSION = "1.0.0"
+
+# ========== 管理员认证配置 ==========
+ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "admin")
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "")  # 必须通过环境变量设置
+SECRET_KEY = os.getenv("SECRET_KEY", "change-this-secret-key-in-production")
