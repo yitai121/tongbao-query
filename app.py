@@ -20,6 +20,13 @@ from auth import check_credentials, is_logged_in, login_required, api_login_requ
 app = Flask(__name__)
 app.secret_key = SECRET_KEY
 
+# 模块级初始化：确保任何部署方式（包括 serverless）都会建表
+try:
+    init_db()
+    print(f"[{datetime.now()}] 数据库初始化完成")
+except Exception as e:
+    print(f"[{datetime.now()}] 数据库初始化失败: {e}")
+
 
 # ========== 自动同步线程 ==========
 def auto_sync_loop():
@@ -323,10 +330,6 @@ def api_import():
 
 # ========== 启动 ==========
 if __name__ == "__main__":
-    # 初始化数据库
-    init_db()
-    print(f"[{datetime.now()}] 数据库初始化完成")
-
     # 启动自动同步线程
     sync_thread = threading.Thread(target=auto_sync_loop, daemon=True)
     sync_thread.start()

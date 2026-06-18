@@ -5,12 +5,17 @@ import asyncio
 import json
 import re
 from datetime import datetime
-from playwright.async_api import async_playwright
 from database import upsert_reward, log_sync
 
 
 async def fetch_tencent_doc_data():
     """使用Playwright抓取腾讯文档数据"""
+    # 延迟导入 Playwright，避免在未安装的环境中导入失败导致整个应用崩溃
+    try:
+        from playwright.async_api import async_playwright
+    except ImportError:
+        raise RuntimeError("Playwright 未安装，无法执行浏览器抓取。请先运行: pip install playwright && playwright install chromium")
+
     print(f"[{datetime.now()}] 开始抓取腾讯文档...")
 
     doc_url = "https://docs.qq.com/sheet/DT2VMQU1PbkhXWWpJ"
