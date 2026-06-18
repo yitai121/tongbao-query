@@ -23,7 +23,12 @@ PHONE_COLUMN = 1
 REWARD_COLUMN = 2
 
 # ========== 数据库配置 ==========
-DB_PATH = os.getenv("DB_PATH", "data/tongbao.db")
+# 默认路径：本地开发用 data/tongbao.db
+# Vercel 环境：Lambda 只允许写 /tmp，自动切换
+_default_db_path = "data/tongbao.db"
+if os.getenv("VERCEL") or os.getenv("AWS_LAMBDA_FUNCTION_NAME"):
+    _default_db_path = "/tmp/tongbao.db"
+DB_PATH = os.getenv("DB_PATH", _default_db_path)
 
 # ========== 同步配置 ==========
 # 自动同步间隔（秒），默认1小时
