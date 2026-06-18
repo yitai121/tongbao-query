@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数据分析看板 - {{ system_name }}</title>
+    <link rel="stylesheet" href="/static/dashboard.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <div class="bg-animation">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+    </div>
+
+    <div class="dashboard-container">
+        <!-- 头部 -->
+        <header class="dashboard-header">
+            <div class="header-content">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div>
+                        <h1>数据分析看板</h1>
+                        <p class="subtitle">{{ system_name }}</p>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <a href="/" class="btn-back">
+                        <i class="fas fa-arrow-left"></i> 返回查询
+                    </a>
+                    <button class="btn-refresh" onclick="refreshData()">
+                        <i class="fas fa-sync-alt"></i> 刷新数据
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- 概览卡片 -->
+        <section class="overview-section">
+            <div class="overview-card glass">
+                <div class="card-icon icon-users">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="card-content">
+                    <span class="card-label">参与用户</span>
+                    <span class="card-value" id="totalUsers">0</span>
+                    <span class="card-trend">人</span>
+                </div>
+            </div>
+            <div class="overview-card glass">
+                <div class="card-icon icon-records">
+                    <i class="fas fa-database"></i>
+                </div>
+                <div class="card-content">
+                    <span class="card-label">数据记录</span>
+                    <span class="card-value" id="totalRecords">0</span>
+                    <span class="card-trend">条</span>
+                </div>
+            </div>
+            <div class="overview-card glass">
+                <div class="card-icon icon-reward">
+                    <i class="fas fa-trophy"></i>
+                </div>
+                <div class="card-content">
+                    <span class="card-label">累计发放</span>
+                    <span class="card-value" id="totalReward">0</span>
+                    <span class="card-trend">通宝</span>
+                </div>
+            </div>
+            <div class="overview-card glass">
+                <div class="card-icon icon-avg">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="card-content">
+                    <span class="card-label">日均奖励</span>
+                    <span class="card-value" id="avgReward">0</span>
+                    <span class="card-trend">通宝/人</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- 图表区域 -->
+        <section class="charts-section">
+            <!-- 每日趋势 -->
+            <div class="chart-card glass">
+                <div class="chart-header">
+                    <h3><i class="fas fa-chart-area"></i> 每日趋势（近30天）</h3>
+                </div>
+                <div class="chart-body">
+                    <canvas id="dailyTrendChart"></canvas>
+                </div>
+            </div>
+
+            <!-- 奖励分布 -->
+            <div class="chart-card glass">
+                <div class="chart-header">
+                    <h3><i class="fas fa-chart-pie"></i> 奖励分布</h3>
+                </div>
+                <div class="chart-body">
+                    <canvas id="distributionChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- 排行榜 -->
+        <section class="leaderboard-section">
+            <div class="leaderboard-card glass">
+                <div class="card-header">
+                    <h3><i class="fas fa-crown"></i> 奖励排行榜 TOP 10</h3>
+                </div>
+                <div class="leaderboard-body">
+                    <table class="leaderboard-table">
+                        <thead>
+                            <tr>
+                                <th>排名</th>
+                                <th>手机号</th>
+                                <th>累计奖励</th>
+                                <th>记录天数</th>
+                                <th>日均奖励</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leaderboardBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- 底部 -->
+        <footer class="dashboard-footer">
+            <p>数据更新时间: <span id="updateTime">--</span></p>
+            <p>Powered by {{ system_name }}</p>
+        </footer>
+    </div>
+
+    <script src="/static/dashboard.js"></script>
+</body>
+</html>
