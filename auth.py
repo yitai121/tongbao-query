@@ -10,8 +10,15 @@ from config import ADMIN_USERNAME, ADMIN_PASSWORD
 def check_credentials(username, password):
     """验证用户名密码"""
     # 使用 hmac.compare_digest 防止时序攻击
-    username_match = hmac.compare_digest(username, ADMIN_USERNAME)
-    password_match = hmac.compare_digest(password, ADMIN_PASSWORD)
+    # 将字符串编码为字节以支持非 ASCII 字符
+    username_match = hmac.compare_digest(
+        username.encode('utf-8'),
+        ADMIN_USERNAME.encode('utf-8')
+    )
+    password_match = hmac.compare_digest(
+        password.encode('utf-8'),
+        ADMIN_PASSWORD.encode('utf-8')
+    )
     return username_match and password_match
 
 
