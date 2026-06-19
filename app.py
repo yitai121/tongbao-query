@@ -6,7 +6,7 @@ import io
 import math
 import threading
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 from flask import Flask, render_template, request, jsonify, session
 from config import FLASK_HOST, FLASK_PORT, FLASK_DEBUG, SYNC_INTERVAL, SYSTEM_NAME, SECRET_KEY
 from database import (
@@ -19,6 +19,9 @@ from auth import check_credentials, is_logged_in, login_required, api_login_requ
 
 app = Flask(__name__)
 app.secret_key = SECRET_KEY
+app.permanent_session_lifetime = timedelta(hours=8)  # Session 8小时后过期
+app.config["SESSION_COOKIE_HTTPONLY"] = True   # 防止 JavaScript 读取 cookie
+app.config["SESSION_COOKIE_SAMESITE"] = "Lax"  # 防止 CSRF 攻击
 
 # 模块级初始化：确保任何部署方式（包括 serverless）都会建表
 try:
