@@ -65,22 +65,28 @@ def admin_panel():
 @app.route("/api/admin/login", methods=["POST"])
 def api_admin_login():
     """管理员登录API"""
-    data = request.get_json()
-    if not data:
-        return jsonify({"code": 400, "msg": "请求数据无效", "data": None})
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({"code": 400, "msg": "请求数据无效", "data": None})
 
-    username = data.get("username", "")
-    password = data.get("password", "")
+        username = data.get("username", "")
+        password = data.get("password", "")
 
-    if not username or not password:
-        return jsonify({"code": 400, "msg": "请输入用户名和密码", "data": None})
+        if not username or not password:
+            return jsonify({"code": 400, "msg": "请输入用户名和密码", "data": None})
 
-    if check_credentials(username, password):
-        session["admin_logged_in"] = True
-        session.permanent = True
-        return jsonify({"code": 200, "msg": "登录成功", "data": None})
-    else:
-        return jsonify({"code": 401, "msg": "用户名或密码错误", "data": None})
+        if check_credentials(username, password):
+            session["admin_logged_in"] = True
+            session.permanent = True
+            return jsonify({"code": 200, "msg": "登录成功", "data": None})
+        else:
+            return jsonify({"code": 401, "msg": "用户名或密码错误", "data": None})
+    except Exception as e:
+        import traceback
+        error_detail = traceback.format_exc()
+        print(f"[{datetime.now()}] 登录错误: {error_detail}")
+        return jsonify({"code": 500, "msg": f"服务器错误: {str(e)}", "data": None}), 500
 
 
 @app.route("/api/admin/logout", methods=["POST"])
