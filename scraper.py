@@ -123,12 +123,13 @@ def build_name_phone_map():
 
 def fetch_reward_data(sheet_id, name_phone_map):
     """
-    从数据 sheet 读取奖励数据，按手机号写入数据库
+    从数据 sheet 读取每日奖励数据，按手机号写入数据库
 
     数据 sheet 结构：
     - 第0行：列头，A1="姓名时间"，B1=姓名1，C1=姓名2，...
-    - 第1行起：每行是奖励数据，B列=姓名1的奖励，C列=姓名2的奖励，...
-    - 每个手机号存储所有行的奖励总和
+    - 第1行起：每行是一天的奖励数据，B列=姓名1的奖励，C列=姓名2的奖励，...
+    - 起始日期：2026-06-03，每行代表一天
+    - 每个手机号每天一条记录
     """
     rows = _fetch_sheet_range(sheet_id, "A1:Z200")
     table = _parse_rows(rows)
@@ -148,9 +149,34 @@ def fetch_reward_data(sheet_id, name_phone_map):
         print(f"[{datetime.now()}] Sheet {sheet_id}: 未找到匹配的姓名列")
         return 0
 
-    # 先汇总每个手机号的总奖励
-    phone_rewards = {}
-    for row in table[1:]:
+    # 起始日期：2026-06-03
+    from datetime import timedelta
+    start_date = datetime(2026, 6, 3)
+
+    # 为每一天创建记录
+    record_count = 0
+    for row_idx, row in enumerate(table[1:], start=1):
+        # 计算这一天的日期
+        current_date = start_date + timedelta(days=row_idx - 1)
+        date_str = current_date.strftime("%Y-%m-%d")
+
+        # 检查这一行是否有数据（跳过全0的行）
+        has_data = False
+        for col_idx in col_names.keys():
+            if col_idx < len(row):
+                reward_raw = row[col_idx].strip()
+                try:
+                    reward = float(reward_raw) if reward_raw else 0
+                    if reward > 0:
+                        has_data = True
+                        break
+                except (ValueError, TypeError):
+                    continue
+
+        if not has_data:
+            continue
+
+        # 为这一天的每个人写入数据库
         for col_idx, name in col_names.items():
             if col_idx >= len(row):
                 continue
@@ -161,17 +187,12 @@ def fetch_reward_data(sheet_id, name_phone_map):
             except (ValueError, TypeError):
                 continue
 
-            phone = name_phone_map[name]
-            phone_rewards[phone] = phone_rewards.get(phone, 0) + reward
+            if reward > 0:
+                phone = name_phone_map[name]
+                upsert_reward(phone, reward, date_str)
+                record_count += 1
 
-    # 写入数据库
-    today = datetime.now().strftime("%Y-%m-%d")
-    record_count = 0
-    for phone, total_reward in phone_rewards.items():
-        upsert_reward(phone, total_reward, today)
-        record_count += 1
-
-    print(f"[{datetime.now()}] Sheet {sheet_id}: 处理 {record_count} 人，总奖励 {sum(phone_rewards.values()):.2f}")
+    print(f"[{datetime.now()}] Sheet {sheet_id}: 处理 {record_count} 条每日记录")
     return record_count
 
 
@@ -203,8 +224,8 @@ def fetch_now():
             except Exception as e:
                 print(f"[{datetime.now()}] 处理 {title} 失败: {e}")
 
-        log_sync("success", total_count, f"API同步成功，共同步{total_count}条记录")
-        print(f"[{datetime.now()}] 同步完成，共同步{total_count}条记录")
+        log_sync("success", total_count, f"API同步成功，共同步{total_count}条每日记录")
+        print(f"[{datetime.now()}] 同步完成，共同步{total_count}条每日记录")
         return total_count
 
     except Exception as e:
