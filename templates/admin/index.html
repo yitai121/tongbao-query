@@ -19,9 +19,6 @@
                 <a href="#" class="nav-item active" data-tab="dashboard">
                     <i class="fas fa-chart-line"></i> 数据看板
                 </a>
-                <a href="#" class="nav-item" data-tab="import">
-                    <i class="fas fa-file-import"></i> 数据导入
-                </a>
                 <a href="#" class="nav-item" data-tab="sync">
                     <i class="fas fa-sync-alt"></i> 同步控制
                 </a>
@@ -45,31 +42,31 @@
                 <h1 class="page-title">数据看板</h1>
                 <div class="stats-grid">
                     <div class="stat-card">
-                        <div class="stat-icon"><i class="fas fa-users"></i></div>
-                        <div class="stat-info">
-                            <div class="stat-value" id="totalUsers">-</div>
-                            <div class="stat-label">总用户数</div>
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon"><i class="fas fa-database"></i></div>
-                        <div class="stat-info">
-                            <div class="stat-value" id="totalRecords">-</div>
-                            <div class="stat-label">总记录数</div>
-                        </div>
-                    </div>
-                    <div class="stat-card">
                         <div class="stat-icon"><i class="fas fa-coins"></i></div>
                         <div class="stat-info">
                             <div class="stat-value" id="totalReward">-</div>
-                            <div class="stat-label">总奖励</div>
+                            <div class="stat-label">总发放</div>
                         </div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-icon"><i class="fas fa-chart-bar"></i></div>
+                        <div class="stat-icon"><i class="fas fa-calendar-alt"></i></div>
                         <div class="stat-info">
-                            <div class="stat-value" id="avgReward">-</div>
-                            <div class="stat-label">平均奖励</div>
+                            <div class="stat-value" id="totalDays">-</div>
+                            <div class="stat-label">记录天数</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
+                        <div class="stat-info">
+                            <div class="stat-value" id="dailyAvg">-</div>
+                            <div class="stat-label">日均发放</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-users"></i></div>
+                        <div class="stat-info">
+                            <div class="stat-value" id="totalUsers">-</div>
+                            <div class="stat-label">活跃用户</div>
                         </div>
                     </div>
                 </div>
@@ -97,28 +94,6 @@
                         </thead>
                         <tbody></tbody>
                     </table>
-                </div>
-            </section>
-
-            <!-- 数据导入 -->
-            <section class="tab-content" id="tab-import">
-                <h1 class="page-title">数据导入</h1>
-                <div class="card">
-                    <h3>CSV文件导入</h3>
-                    <p class="text-muted">从腾讯文档导出CSV文件后上传，系统将自动解析并导入数据。</p>
-                    <div class="upload-area" id="uploadArea">
-                        <i class="fas fa-cloud-upload-alt"></i>
-                        <p>拖拽文件到此处，或点击选择文件</p>
-                        <input type="file" id="fileInput" accept=".csv" style="display:none">
-                    </div>
-                    <div class="file-info" id="fileInfo" style="display:none">
-                        <span id="fileName"></span>
-                        <button class="btn btn-sm btn-secondary" id="clearFileBtn">清除</button>
-                    </div>
-                    <button class="btn btn-primary" id="importBtn" disabled>
-                        <i class="fas fa-upload"></i> 开始导入
-                    </button>
-                    <div class="import-result" id="importResult" style="display:none"></div>
                 </div>
             </section>
 

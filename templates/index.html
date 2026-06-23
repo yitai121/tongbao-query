@@ -56,6 +56,12 @@
 
         <!-- 结果区域 -->
         <div id="resultArea" class="result-area hidden">
+            <!-- 查询提示 -->
+            <div class="query-notice glass">
+                <i class="fas fa-info-circle"></i>
+                <span>当前显示最近 7 天的数据</span>
+            </div>
+
             <!-- 汇总卡片 -->
             <div class="summary-cards">
                 <div class="summary-card glass">
@@ -63,7 +69,7 @@
                         <i class="fas fa-trophy"></i>
                     </div>
                     <div class="card-content">
-                        <span class="card-label">累计通宝</span>
+                        <span class="card-label">近7天累计</span>
                         <span class="card-value" id="totalReward">0</span>
                     </div>
                 </div>
@@ -72,7 +78,7 @@
                         <i class="fas fa-calendar-check"></i>
                     </div>
                     <div class="card-content">
-                        <span class="card-label">记录天数</span>
+                        <span class="card-label">有效天数</span>
                         <span class="card-value" id="totalDays">0</span>
                     </div>
                 </div>

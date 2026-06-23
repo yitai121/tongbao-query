@@ -85,11 +85,20 @@ function showResult(data) {
     tbody.innerHTML = "";
     records.forEach((r, i) => {
         const tr = document.createElement("tr");
-        tr.innerHTML = `
-            <td>${i + 1}</td>
-            <td>${r.record_date}</td>
-            <td class="reward-value">+${formatNum(r.reward)}</td>
-        `;
+        if (r.synced) {
+            tr.innerHTML = `
+                <td>${i + 1}</td>
+                <td>${r.record_date}</td>
+                <td class="reward-value">+${formatNum(r.reward)}</td>
+            `;
+        } else {
+            tr.classList.add("unsynced-row");
+            tr.innerHTML = `
+                <td>${i + 1}</td>
+                <td>${r.record_date}</td>
+                <td class="reward-value unsynced">未同步</td>
+            `;
+        }
         tbody.appendChild(tr);
     });
 

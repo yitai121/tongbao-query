@@ -45,9 +45,9 @@ async function loadDashboard() {
         const overview = data.overview;
 
         document.getElementById('totalUsers').textContent = overview.total_users;
-        document.getElementById('totalRecords').textContent = overview.total_records;
-        document.getElementById('totalReward').textContent = overview.total_reward.toFixed(2);
-        document.getElementById('avgReward').textContent = overview.avg_reward.toFixed(2);
+        document.getElementById('totalDays').textContent = overview.total_days;
+        document.getElementById('totalReward').textContent = formatNumber(overview.total_reward);
+        document.getElementById('dailyAvg').textContent = formatNumber(overview.daily_avg);
 
         // 每日趋势图
         renderDailyTrend(data.daily_trend);
@@ -60,6 +60,13 @@ async function loadDashboard() {
     } catch (err) {
         console.error('加载看板数据失败:', err);
     }
+}
+
+function formatNumber(num) {
+    if (num >= 10000) {
+        return (num / 10000).toFixed(1) + '万';
+    }
+    return num.toFixed(2);
 }
 
 function renderDailyTrend(trend) {
@@ -123,9 +130,9 @@ function renderLeaderboard(leaderboard) {
         <tr>
             <td>${i + 1}</td>
             <td>${maskPhone(item.phone)}</td>
-            <td>${item.total_reward.toFixed(2)}</td>
+            <td>${formatNumber(item.total_reward)}</td>
             <td>${item.record_days}</td>
-            <td>${item.avg_reward.toFixed(2)}</td>
+            <td>${formatNumber(item.avg_reward)}</td>
         </tr>
     `).join('');
 }
@@ -134,88 +141,6 @@ function maskPhone(phone) {
     if (!phone || phone.length < 7) return phone;
     return phone.slice(0, 3) + '****' + phone.slice(-4);
 }
-
-// ========== 数据导入 ==========
-let selectedFile = null;
-
-const uploadArea = document.getElementById('uploadArea');
-const fileInput = document.getElementById('fileInput');
-const fileInfo = document.getElementById('fileInfo');
-const importBtn = document.getElementById('importBtn');
-
-uploadArea.addEventListener('click', () => fileInput.click());
-
-uploadArea.addEventListener('dragover', (e) => {
-    e.preventDefault();
-    uploadArea.classList.add('dragover');
-});
-
-uploadArea.addEventListener('dragleave', () => {
-    uploadArea.classList.remove('dragover');
-});
-
-uploadArea.addEventListener('drop', (e) => {
-    e.preventDefault();
-    uploadArea.classList.remove('dragover');
-    const files = e.dataTransfer.files;
-    if (files.length > 0 && files[0].name.endsWith('.csv')) {
-        handleFile(files[0]);
-    }
-});
-
-fileInput.addEventListener('change', () => {
-    if (fileInput.files.length > 0) {
-        handleFile(fileInput.files[0]);
-    }
-});
-
-function handleFile(file) {
-    selectedFile = file;
-    document.getElementById('fileName').textContent = file.name;
-    fileInfo.style.display = 'flex';
-    importBtn.disabled = false;
-    document.getElementById('importResult').style.display = 'none';
-}
-
-document.getElementById('clearFileBtn').addEventListener('click', () => {
-    selectedFile = null;
-    fileInput.value = '';
-    fileInfo.style.display = 'none';
-    importBtn.disabled = true;
-});
-
-importBtn.addEventListener('click', async () => {
-    if (!selectedFile) return;
-
-    importBtn.disabled = true;
-    importBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 导入中...';
-
-    const formData = new FormData();
-    formData.append('file', selectedFile);
-
-    try {
-        const res = await fetch('/api/import', { method: 'POST', body: formData });
-        const result = await res.json();
-        const resultDiv = document.getElementById('importResult');
-        resultDiv.style.display = 'block';
-
-        if (result.code === 200) {
-            resultDiv.className = 'import-result result-success';
-            resultDiv.textContent = `导入成功！共导入 ${result.data.imported} 条记录。`;
-        } else {
-            resultDiv.className = 'import-result result-error';
-            resultDiv.textContent = `导入失败：${result.msg}`;
-        }
-    } catch (err) {
-        const resultDiv = document.getElementById('importResult');
-        resultDiv.style.display = 'block';
-        resultDiv.className = 'import-result result-error';
-        resultDiv.textContent = '网络错误，请重试';
-    } finally {
-        importBtn.disabled = false;
-        importBtn.innerHTML = '<i class="fas fa-upload"></i> 开始导入';
-    }
-});
 
 // ========== 同步控制 ==========
 document.getElementById('syncBtn').addEventListener('click', async () => {

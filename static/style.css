@@ -263,6 +263,22 @@ body {
     }
 }
 
+/* ========== 查询提示 ========== */
+.query-notice {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 20px;
+    margin-bottom: 20px;
+    font-size: 13px;
+    color: var(--primary-light);
+    border-left: 3px solid var(--primary);
+}
+
+.query-notice i {
+    font-size: 16px;
+}
+
 /* ========== 汇总卡片 ========== */
 .summary-cards {
     display: grid;
@@ -401,6 +417,22 @@ body {
     color: var(--accent-light);
     font-weight: 600;
     font-size: 16px;
+}
+
+.reward-value.unsynced {
+    color: var(--text-secondary);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 14px;
+}
+
+.unsynced-row {
+    opacity: 0.5;
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.unsynced-row:hover {
+    background: rgba(255, 255, 255, 0.04) !important;
 }
 
 /* ========== 空状态 ========== */

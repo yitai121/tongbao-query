@@ -194,10 +194,19 @@ def get_dashboard_data():
             COUNT(DISTINCT phone) as total_users,
             COUNT(*) as total_records,
             COALESCE(SUM(reward), 0) as total_reward,
-            COALESCE(AVG(reward), 0) as avg_reward
+            COALESCE(AVG(reward), 0) as avg_reward,
+            COUNT(DISTINCT record_date) as total_days,
+            MIN(record_date) as first_date,
+            MAX(record_date) as last_date
         FROM rewards
     """)
     overview = dict(cursor.fetchone())
+
+    # 计算日均发放
+    if overview['total_days'] > 0:
+        overview['daily_avg'] = overview['total_reward'] / overview['total_days']
+    else:
+        overview['daily_avg'] = 0
 
     # 每日趋势（最近30天）
     cursor.execute("""

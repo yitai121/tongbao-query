@@ -1,8 +1,6 @@
 """
 通宝奖励查询系统 - Flask 后端
 """
-import csv
-import io
 import math
 import threading
 import time
@@ -11,7 +9,7 @@ from flask import Flask, render_template, request, jsonify, session
 from config import FLASK_HOST, FLASK_PORT, FLASK_DEBUG, SYNC_INTERVAL, SYSTEM_NAME, SECRET_KEY
 from database import (
     init_db, get_rewards_by_phone, get_total_reward_by_phone, get_stats,
-    log_sync, upsert_reward, get_dashboard_data, get_config, set_config,
+    log_sync, get_dashboard_data, get_config, set_config,
     get_all_configs, get_sync_logs, get_sync_log_count
 )
 from scraper import fetch_now
@@ -182,30 +180,51 @@ def api_query():
 
     # 查询明细
     all_records = get_rewards_by_phone(phone, days_limit=days_limit)
-    total = len(all_records)
+
+    # 生成完整日期范围（从2026-06-03到今天，或最近7天）
+    start_date = datetime(2026, 6, 3)
+    end_date = datetime.now()
+
+    if days_limit:
+        start_date = end_date - timedelta(days=days_limit - 1)
+
+    # 创建日期到记录的映射
+    record_map = {r["record_date"]: r for r in all_records}
+
+    # 生成完整日期列表，填充未同步的日期
+    full_records = []
+    current_date = start_date
+    while current_date <= end_date:
+        date_str = current_date.strftime("%Y-%m-%d")
+        if date_str in record_map:
+            full_records.append({
+                "record_date": date_str,
+                "reward": record_map[date_str]["reward"],
+                "synced": True
+            })
+        else:
+            full_records.append({
+                "record_date": date_str,
+                "reward": None,
+                "synced": False
+            })
+        current_date += timedelta(days=1)
+
+    # 按日期倒序排列（最新的在前）
+    full_records.reverse()
+
+    total = len(full_records)
 
     # 分页
     if per_page > 0:
         start = (page - 1) * per_page
         end = start + per_page
-        records = all_records[start:end]
+        records = full_records[start:end]
     else:
-        records = all_records
+        records = full_records
 
-    # 查询汇总
+    # 查询汇总（只统计已同步的记录）
     summary = get_total_reward_by_phone(phone, days_limit=days_limit)
-
-    if not all_records:
-        return jsonify({
-            "code": 404,
-            "msg": "未找到该手机号的记录",
-            "data": {
-                "phone": phone,
-                "records": [],
-                "summary": {"total": 0, "days": 0},
-                "pagination": {"page": 1, "per_page": per_page, "total": 0, "total_pages": 0}
-            }
-        })
 
     return jsonify({
         "code": 200,
@@ -263,82 +282,6 @@ def api_dashboard():
         "msg": "success",
         "data": data
     })
-
-
-@app.route("/api/import", methods=["POST"])
-@api_login_required
-def api_import():
-    """CSV文件导入接口"""
-    if "file" not in request.files:
-        return jsonify({"code": 400, "msg": "请选择文件", "data": None})
-
-    file = request.files["file"]
-    if file.filename == "":
-        return jsonify({"code": 400, "msg": "请选择文件", "data": None})
-
-    # 检查文件类型
-    if not file.filename.endswith((".csv", ".txt")):
-        return jsonify({"code": 400, "msg": "只支持CSV或TXT文件", "data": None})
-
-    try:
-        # 读取文件内容
-        content = file.read().decode("utf-8-sig")
-        reader = csv.reader(io.StringIO(content))
-
-        rows = list(reader)
-        if len(rows) < 2:
-            return jsonify({"code": 400, "msg": "文件为空或只有表头", "data": None})
-
-        # 获取今天的日期
-        today = datetime.now().strftime("%Y-%m-%d")
-        record_count = 0
-        errors = []
-
-        # 跳过表头，从第二行开始
-        for i, row in enumerate(rows[1:], start=2):
-            if len(row) < 2:
-                errors.append(f"第{i}行数据不完整")
-                continue
-
-            phone = str(row[0]).strip()
-            reward_raw = str(row[1]).strip()
-
-            # 验证手机号
-            if not phone or not phone.isdigit() or len(phone) != 11:
-                errors.append(f"第{i}行手机号无效: {phone}")
-                continue
-
-            # 解析奖励值
-            try:
-                reward = float(reward_raw) if reward_raw else 0
-            except (ValueError, TypeError):
-                errors.append(f"第{i}行奖励值无效: {reward_raw}")
-                continue
-
-            upsert_reward(phone, reward, today)
-            record_count += 1
-
-        msg = f"导入成功，共同步{record_count}条记录"
-        if errors:
-            msg += f"，{len(errors)}条跳过"
-
-        log_sync("success", record_count, msg)
-
-        return jsonify({
-            "code": 200,
-            "msg": msg,
-            "data": {
-                "imported": record_count,
-                "errors": errors[:10]  # 最多返回10条错误
-            }
-        })
-
-    except Exception as e:
-        return jsonify({
-            "code": 500,
-            "msg": f"导入失败: {str(e)}",
-            "data": None
-        })
 
 
 # ========== 启动 ==========
