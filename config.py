@@ -5,15 +5,19 @@ import os
 
 # ========== 腾讯文档 API 配置 ==========
 # 申请地址: https://docs.qq.com/open/
-TENCENT_DOC_APP_ID = os.getenv("TENCENT_DOC_APP_ID", "你的APP_ID")
-TENCENT_DOC_APP_KEY = os.getenv("TENCENT_DOC_APP_KEY", "你的APP_KEY")
-TENCENT_DOC_APP_SECRET = os.getenv("TENCENT_DOC_APP_SECRET", "你的APP_SECRET")
+TENCENT_DOC_APP_ID = os.getenv("TENCENT_DOC_APP_ID", "553f14977add43dcb84c59bdcf664973")
+TENCENT_DOC_APP_KEY = os.getenv("TENCENT_DOC_APP_KEY", "")
+TENCENT_DOC_APP_SECRET = os.getenv("TENCENT_DOC_APP_SECRET", "")
+
+# OAuth 凭证（从腾讯文档开放平台获取）
+TENCENT_DOC_ACCESS_TOKEN = os.getenv("TENCENT_DOC_ACCESS_TOKEN", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjbHQiOiI1NTNmMTQ5NzdhZGQ0M2RjYjg0YzU5YmRjZjY2NDk3MyIsInR5cCI6MSwiZXhwIjoxNzg0MDEwMDk3LjM5ODc3MSwiaWF0IjoxNzgxNDE4MDk3LjM5ODc3MSwic3ViIjoiZWQ3OTcwYTIzYzYyNDY1ZjkwMTJjNWZjZmU5ODc5ZjAifQ.ScZIsNWs4e_GlE5--oRyZMVMANwe2SEjExTvc8cOVUY")
+TENCENT_DOC_OPEN_ID = os.getenv("TENCENT_DOC_OPEN_ID", "ed7970a23c62465f9012c5fcfe9879f0")
 
 # ========== 文档配置 ==========
 # 在线表格的文档ID（从表格URL中获取）
 # 例如: https://docs.qq.com/sheet/DXXXXXXXXXXXX
 # 其中 DXXXXXXXXXXXX 就是文档ID
-DOC_ID = os.getenv("DOC_ID", "你的文档ID")
+DOC_ID = os.getenv("DOC_ID", "DT2VMQU1PbkhXWWpJ")
 SHEET_ID = os.getenv("SHEET_ID", "Sheet1")  # 工作表名称，默认Sheet1
 
 # ========== 数据列配置 ==========
