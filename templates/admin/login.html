@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>管理员登录 - 通宝奖励查询系统</title>
+    <title>管理员登录 - {{ system_name }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -11,98 +13,220 @@
             box-sizing: border-box;
         }
 
+        :root {
+            --primary: #6366f1;
+            --primary-light: #818cf8;
+            --primary-dark: #4f46e5;
+            --accent: #f59e0b;
+            --success: #10b981;
+            --danger: #ef4444;
+            --bg-dark: #0f0f23;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --border: rgba(255, 255, 255, 0.1);
+            --glass-bg: rgba(15, 15, 35, 0.6);
+            --glass-border: rgba(255, 255, 255, 0.08);
+        }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            overflow-x: hidden;
+            position: relative;
             padding: 20px;
         }
 
-        .login-card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            border-radius: 20px;
-            padding: 40px;
+        /* 背景动画 */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
-            max-width: 400px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            height: 100%;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .gradient-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.4;
+            animation: float 20s ease-in-out infinite;
+        }
+
+        .orb-1 {
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, #6366f1, transparent);
+            top: -200px;
+            left: -200px;
+            animation-delay: 0s;
+        }
+
+        .orb-2 {
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, #f59e0b, transparent);
+            bottom: -150px;
+            right: -150px;
+            animation-delay: -7s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(50px, -50px) scale(1.1); }
+            50% { transform: translate(-30px, 30px) scale(0.9); }
+            75% { transform: translate(30px, 50px) scale(1.05); }
+        }
+
+        /* 登录卡片 */
+        .login-card {
+            position: relative;
+            z-index: 1;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 48px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            animation: fadeInUp 0.5s ease;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .login-header {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 36px;
+        }
+
+        .logo-icon {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            color: white;
+            margin: 0 auto 20px;
+            box-shadow: 0 8px 32px rgba(99, 102, 241, 0.3);
         }
 
         .login-header h1 {
-            font-size: 24px;
-            color: #333;
+            font-size: 28px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--text-primary), var(--primary-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
             margin-bottom: 8px;
         }
 
         .login-header p {
-            color: #666;
+            color: var(--text-secondary);
             font-size: 14px;
         }
 
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 24px;
         }
 
         .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            color: #555;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+            color: var(--text-primary);
             font-size: 14px;
-            font-weight: 500;
+            font-weight: 600;
+        }
+
+        .form-group label i {
+            color: var(--primary-light);
+            font-size: 16px;
         }
 
         .form-group input {
             width: 100%;
-            padding: 12px 16px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
+            padding: 14px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: var(--text-primary);
             font-size: 14px;
-            transition: border-color 0.3s;
-            outline: none;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.3s ease;
         }
 
         .form-group input:focus {
-            border-color: #667eea;
+            outline: none;
+            border-color: var(--primary);
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
+        }
+
+        .form-group input::placeholder {
+            color: var(--text-secondary);
         }
 
         .error-message {
-            background: #fee;
-            color: #c33;
-            padding: 10px 16px;
-            border-radius: 8px;
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--danger);
+            padding: 12px 16px;
+            border-radius: 12px;
             margin-bottom: 20px;
             font-size: 14px;
+            font-weight: 500;
             display: none;
+            border: 1px solid rgba(239, 68, 68, 0.3);
         }
 
         .error-message.show {
-            display: block;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         .login-btn {
             width: 100%;
-            padding: 14px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 16px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             color: white;
             border: none;
-            border-radius: 10px;
+            border-radius: 12px;
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: all 0.3s ease;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
 
         .login-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4);
         }
 
         .login-btn:active {
@@ -117,45 +241,91 @@
 
         .back-link {
             text-align: center;
-            margin-top: 20px;
+            margin-top: 24px;
         }
 
         .back-link a {
-            color: #667eea;
+            color: var(--primary-light);
             text-decoration: none;
             font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
         }
 
         .back-link a:hover {
-            text-decoration: underline;
+            color: var(--primary);
+            transform: translateX(-4px);
+        }
+
+        @media (max-width: 640px) {
+            .login-card {
+                padding: 32px 24px;
+            }
+
+            .login-header h1 {
+                font-size: 24px;
+            }
+
+            .logo-icon {
+                width: 56px;
+                height: 56px;
+                font-size: 24px;
+            }
         }
     </style>
 </head>
 <body>
+    <!-- 背景动画 -->
+    <div class="bg-animation">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+    </div>
+
     <div class="login-card">
         <div class="login-header">
+            <div class="logo-icon">
+                <i class="fas fa-lock"></i>
+            </div>
             <h1>管理员登录</h1>
-            <p>通宝奖励查询系统</p>
+            <p>{{ system_name }}</p>
         </div>
 
-        <div class="error-message" id="errorMessage"></div>
+        <div class="error-message" id="errorMessage">
+            <i class="fas fa-exclamation-circle"></i>
+            <span></span>
+        </div>
 
         <form id="loginForm">
             <div class="form-group">
-                <label for="username">用户名</label>
+                <label for="username">
+                    <i class="fas fa-user"></i>
+                    <span>用户名</span>
+                </label>
                 <input type="text" id="username" name="username" required autocomplete="username" placeholder="请输入用户名">
             </div>
 
             <div class="form-group">
-                <label for="password">密码</label>
+                <label for="password">
+                    <i class="fas fa-key"></i>
+                    <span>密码</span>
+                </label>
                 <input type="password" id="password" name="password" required autocomplete="current-password" placeholder="请输入密码">
             </div>
 
-            <button type="submit" class="login-btn" id="loginBtn">登录</button>
+            <button type="submit" class="login-btn" id="loginBtn">
+                <i class="fas fa-sign-in-alt"></i>
+                <span>登录</span>
+            </button>
         </form>
 
         <div class="back-link">
-            <a href="/">← 返回首页</a>
+            <a href="/">
+                <i class="fas fa-arrow-left"></i>
+                <span>返回首页</span>
+            </a>
         </div>
     </div>
 
@@ -169,13 +339,13 @@
             const errorMessage = document.getElementById('errorMessage');
 
             if (!username || !password) {
-                errorMessage.textContent = '请输入用户名和密码';
+                errorMessage.querySelector('span').textContent = '请输入用户名和密码';
                 errorMessage.classList.add('show');
                 return;
             }
 
             loginBtn.disabled = true;
-            loginBtn.textContent = '登录中...';
+            loginBtn.querySelector('span').textContent = '登录中...';
             errorMessage.classList.remove('show');
 
             try {
@@ -190,15 +360,15 @@
                 if (result.code === 200) {
                     window.location.href = '/admin';
                 } else {
-                    errorMessage.textContent = result.msg || '登录失败';
+                    errorMessage.querySelector('span').textContent = result.msg || '登录失败';
                     errorMessage.classList.add('show');
                 }
             } catch (error) {
-                errorMessage.textContent = '网络错误，请重试';
+                errorMessage.querySelector('span').textContent = '网络错误，请重试';
                 errorMessage.classList.add('show');
             } finally {
                 loginBtn.disabled = false;
-                loginBtn.textContent = '登录';
+                loginBtn.querySelector('span').textContent = '登录';
             }
         });
     </script>
