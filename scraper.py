@@ -13,11 +13,23 @@ from config import (
     DOC_ID, SHEET_ID,
     TENCENT_DOC_ACCESS_TOKEN, TENCENT_DOC_OPEN_ID, TENCENT_DOC_APP_ID
 )
-from database import upsert_reward, log_sync
+from database import upsert_reward, log_sync, get_db
 
 
 # 腾讯文档 API 基础 URL
 API_BASE = "https://docs.qq.com/openapi/spreadsheet/v3"
+
+
+def clear_all_reward_records():
+    """清空所有奖励记录，为全量同步做准备"""
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM rewards")
+    conn.commit()
+    deleted_count = cursor.rowcount
+    conn.close()
+    print(f"[{datetime.now()}] 已清空 {deleted_count} 条旧奖励记录")
+    return deleted_count
 
 
 def _build_headers():
@@ -215,6 +227,9 @@ def fetch_now():
         for sid, title in sheet_titles.items():
             if "总数据" in title:
                 data_sheets.append((sid, title))
+
+        # 4. 清空旧记录，全量同步（避免显示已删除的数据）
+        clear_all_reward_records()
 
         total_count = 0
         for sid, title in data_sheets:

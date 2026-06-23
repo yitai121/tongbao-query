@@ -225,8 +225,14 @@ def api_query():
     else:
         records = full_records
 
-    # 查询汇总（只统计已同步的记录）
-    summary = get_total_reward_by_phone(phone, days_limit=days_limit)
+    # 从显示的记录中计算汇总（确保数据一致性）
+    synced_records = [r for r in full_records if r.get("synced")]
+    summary_total = sum(r["reward"] for r in synced_records)
+    summary_days = len(synced_records)
+    summary = {
+        "total": summary_total,
+        "days": summary_days
+    }
 
     return jsonify({
         "code": 200,
