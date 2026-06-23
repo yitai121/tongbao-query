@@ -3,13 +3,13 @@
  */
 
 // ========== Tab 切换 ==========
-document.querySelectorAll('.nav-item[data-tab]').forEach(item => {
+document.querySelectorAll('.tab-btn[data-tab]').forEach(item => {
     item.addEventListener('click', (e) => {
         e.preventDefault();
         const tab = item.dataset.tab;
 
         // 切换导航高亮
-        document.querySelectorAll('.nav-item[data-tab]').forEach(n => n.classList.remove('active'));
+        document.querySelectorAll('.tab-btn[data-tab]').forEach(n => n.classList.remove('active'));
         item.classList.add('active');
 
         // 切换内容

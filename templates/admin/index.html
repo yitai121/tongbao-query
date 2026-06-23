@@ -3,138 +3,193 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>管理后台 - 通宝奖励查询系统</title>
+    <title>管理后台 - {{ system_name }}</title>
     <link rel="stylesheet" href="/static/admin/admin.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
-    <div class="admin-layout">
-        <!-- 侧边栏 -->
-        <aside class="sidebar">
-            <div class="sidebar-header">
-                <h2><i class="fas fa-cog"></i> 管理后台</h2>
-            </div>
-            <nav class="sidebar-nav">
-                <a href="#" class="nav-item active" data-tab="dashboard">
-                    <i class="fas fa-chart-line"></i> 数据看板
-                </a>
-                <a href="#" class="nav-item" data-tab="sync">
-                    <i class="fas fa-sync-alt"></i> 同步控制
-                </a>
-                <a href="#" class="nav-item" data-tab="config">
-                    <i class="fas fa-sliders-h"></i> 系统配置
-                </a>
-                <a href="#" class="nav-item" data-tab="pagination">
-                    <i class="fas fa-list-ol"></i> 分页配置
-                </a>
-            </nav>
-            <div class="sidebar-footer">
-                <a href="/" class="nav-item"><i class="fas fa-home"></i> 返回前台</a>
-                <a href="#" class="nav-item" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> 退出登录</a>
-            </div>
-        </aside>
+    <!-- 背景动画 -->
+    <div class="bg-animation">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+    </div>
 
-        <!-- 主内容区 -->
-        <main class="main-content">
-            <!-- 数据看板 -->
-            <section class="tab-content active" id="tab-dashboard">
-                <h1 class="page-title">数据看板</h1>
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-icon"><i class="fas fa-coins"></i></div>
-                        <div class="stat-info">
-                            <div class="stat-value" id="totalReward">-</div>
-                            <div class="stat-label">总发放</div>
-                        </div>
+    <!-- 主容器 -->
+    <div class="container">
+        <!-- 头部 -->
+        <header class="header">
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-cog"></i>
+                </div>
+                <div>
+                    <h1>管理后台</h1>
+                    <p class="subtitle">{{ system_name }}</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <a href="/" class="btn btn-ghost">
+                    <i class="fas fa-home"></i>
+                    <span>返回前台</span>
+                </a>
+                <button id="logoutBtn" class="btn btn-ghost">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>退出登录</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- 导航标签 -->
+        <nav class="tabs">
+            <button class="tab-btn active" data-tab="dashboard">
+                <i class="fas fa-chart-line"></i>
+                <span>数据看板</span>
+            </button>
+            <button class="tab-btn" data-tab="sync">
+                <i class="fas fa-sync-alt"></i>
+                <span>同步控制</span>
+            </button>
+            <button class="tab-btn" data-tab="config">
+                <i class="fas fa-sliders-h"></i>
+                <span>系统配置</span>
+            </button>
+            <button class="tab-btn" data-tab="pagination">
+                <i class="fas fa-list-ol"></i>
+                <span>分页配置</span>
+            </button>
+        </nav>
+
+        <!-- 数据看板 -->
+        <section class="tab-content active" id="tab-dashboard">
+            <!-- 统计卡片 -->
+            <div class="stats-grid">
+                <div class="stat-card glass">
+                    <div class="stat-icon icon-total">
+                        <i class="fas fa-coins"></i>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-icon"><i class="fas fa-calendar-alt"></i></div>
-                        <div class="stat-info">
-                            <div class="stat-value" id="totalDays">-</div>
-                            <div class="stat-label">记录天数</div>
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
-                        <div class="stat-info">
-                            <div class="stat-value" id="dailyAvg">-</div>
-                            <div class="stat-label">日均发放</div>
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon"><i class="fas fa-users"></i></div>
-                        <div class="stat-info">
-                            <div class="stat-value" id="totalUsers">-</div>
-                            <div class="stat-label">活跃用户</div>
-                        </div>
+                    <div class="stat-content">
+                        <div class="stat-label">总发放</div>
+                        <div class="stat-value" id="totalReward">-</div>
                     </div>
                 </div>
-                <div class="charts-grid">
-                    <div class="chart-card">
-                        <h3>每日趋势（最近30天）</h3>
-                        <canvas id="dailyTrendChart"></canvas>
+                <div class="stat-card glass">
+                    <div class="stat-icon icon-days">
+                        <i class="fas fa-calendar-alt"></i>
                     </div>
-                    <div class="chart-card">
-                        <h3>奖励分布</h3>
-                        <canvas id="distributionChart"></canvas>
+                    <div class="stat-content">
+                        <div class="stat-label">记录天数</div>
+                        <div class="stat-value" id="totalDays">-</div>
                     </div>
                 </div>
-                <div class="chart-card">
-                    <h3>排行榜 TOP 10</h3>
+                <div class="stat-card glass">
+                    <div class="stat-icon icon-avg">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-label">日均发放</div>
+                        <div class="stat-value" id="dailyAvg">-</div>
+                    </div>
+                </div>
+                <div class="stat-card glass">
+                    <div class="stat-icon icon-users">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-label">活跃用户</div>
+                        <div class="stat-value" id="totalUsers">-</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 图表区域 -->
+            <div class="charts-grid">
+                <div class="chart-card glass">
+                    <div class="chart-header">
+                        <h3><i class="fas fa-chart-area"></i> 每日趋势</h3>
+                        <span class="chart-badge">最近30天</span>
+                    </div>
+                    <canvas id="dailyTrendChart"></canvas>
+                </div>
+                <div class="chart-card glass">
+                    <div class="chart-header">
+                        <h3><i class="fas fa-chart-pie"></i> 奖励分布</h3>
+                    </div>
+                    <canvas id="distributionChart"></canvas>
+                </div>
+            </div>
+
+            <!-- 排行榜 -->
+            <div class="card glass">
+                <div class="card-header">
+                    <h3><i class="fas fa-trophy"></i> 排行榜 TOP 10</h3>
+                </div>
+                <div class="table-wrapper">
                     <table class="data-table" id="leaderboardTable">
                         <thead>
                             <tr>
-                                <th>排名</th>
-                                <th>手机号</th>
-                                <th>总奖励</th>
-                                <th>记录天数</th>
-                                <th>平均奖励</th>
+                                <th><i class="fas fa-hashtag"></i> 排名</th>
+                                <th><i class="fas fa-mobile-alt"></i> 手机号</th>
+                                <th><i class="fas fa-coins"></i> 总奖励</th>
+                                <th><i class="fas fa-calendar-check"></i> 记录天数</th>
+                                <th><i class="fas fa-chart-line"></i> 平均奖励</th>
                             </tr>
                         </thead>
                         <tbody></tbody>
                     </table>
                 </div>
-            </section>
+            </div>
+        </section>
 
-            <!-- 同步控制 -->
-            <section class="tab-content" id="tab-sync">
-                <h1 class="page-title">同步控制</h1>
-                <div class="card">
-                    <h3>手动同步</h3>
-                    <p class="text-muted">从腾讯文档抓取最新数据并同步到本地数据库。</p>
-                    <button class="btn btn-primary" id="syncBtn">
-                        <i class="fas fa-sync-alt"></i> 立即同步
-                    </button>
-                    <div class="sync-result" id="syncResult" style="display:none"></div>
+        <!-- 同步控制 -->
+        <section class="tab-content" id="tab-sync">
+            <div class="card glass">
+                <div class="card-header">
+                    <h3><i class="fas fa-sync-alt"></i> 手动同步</h3>
                 </div>
-                <div class="card">
-                    <h3>同步日志</h3>
+                <p class="card-desc">从腾讯文档抓取最新数据并同步到本地数据库</p>
+                <button class="btn btn-primary" id="syncBtn">
+                    <i class="fas fa-sync-alt"></i>
+                    <span>立即同步</span>
+                </button>
+                <div class="sync-result" id="syncResult" style="display:none"></div>
+            </div>
+
+            <div class="card glass">
+                <div class="card-header">
+                    <h3><i class="fas fa-history"></i> 同步日志</h3>
+                </div>
+                <div class="table-wrapper">
                     <table class="data-table" id="syncLogTable">
                         <thead>
                             <tr>
-                                <th>时间</th>
-                                <th>状态</th>
-                                <th>记录数</th>
-                                <th>消息</th>
+                                <th><i class="fas fa-clock"></i> 时间</th>
+                                <th><i class="fas fa-check-circle"></i> 状态</th>
+                                <th><i class="fas fa-database"></i> 记录数</th>
+                                <th><i class="fas fa-info-circle"></i> 消息</th>
                             </tr>
                         </thead>
                         <tbody></tbody>
                     </table>
-                    <div class="pagination" id="syncLogPagination"></div>
                 </div>
-            </section>
+                <div class="pagination" id="syncLogPagination"></div>
+            </div>
+        </section>
 
-            <!-- 系统配置 -->
-            <section class="tab-content" id="tab-config">
-                <h1 class="page-title">系统配置</h1>
-                <div class="card">
-                    <h3>基本配置</h3>
-                    <form id="configForm">
-                        <div class="form-group">
-                            <label>系统名称</label>
-                            <input type="text" id="cfg_system_name" placeholder="通宝奖励查询系统">
-                        </div>
+        <!-- 系统配置 -->
+        <section class="tab-content" id="tab-config">
+            <div class="card glass">
+                <div class="card-header">
+                    <h3><i class="fas fa-cog"></i> 基本配置</h3>
+                </div>
+                <form id="configForm">
+                    <div class="form-group">
+                        <label>系统名称</label>
+                        <input type="text" id="cfg_system_name" placeholder="通宝奖励查询系统">
+                    </div>
+                    <div class="form-row">
                         <div class="form-group">
                             <label>文档ID</label>
                             <input type="text" id="cfg_doc_id" placeholder="腾讯文档ID">
@@ -143,6 +198,8 @@
                             <label>工作表名称</label>
                             <input type="text" id="cfg_sheet_id" placeholder="Sheet1">
                         </div>
+                    </div>
+                    <div class="form-row">
                         <div class="form-group">
                             <label>手机号列号（从1开始）</label>
                             <input type="number" id="cfg_phone_column" min="1" placeholder="1">
@@ -151,37 +208,40 @@
                             <label>奖励列号（从1开始）</label>
                             <input type="number" id="cfg_reward_column" min="1" placeholder="2">
                         </div>
-                        <div class="form-group">
-                            <label>自动同步间隔（秒）</label>
-                            <input type="number" id="cfg_sync_interval" min="60" placeholder="3600">
-                        </div>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-save"></i> 保存配置
-                        </button>
-                    </form>
-                    <div class="save-result" id="configResult" style="display:none"></div>
-                </div>
-            </section>
+                    </div>
+                    <div class="form-group">
+                        <label>自动同步间隔（秒）</label>
+                        <input type="number" id="cfg_sync_interval" min="60" placeholder="3600">
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        <span>保存配置</span>
+                    </button>
+                </form>
+                <div class="save-result" id="configResult" style="display:none"></div>
+            </div>
+        </section>
 
-            <!-- 分页配置 -->
-            <section class="tab-content" id="tab-pagination">
-                <h1 class="page-title">分页配置</h1>
-                <div class="card">
-                    <h3>查询结果分页</h3>
-                    <form id="paginationForm">
-                        <div class="form-group">
-                            <label>每页显示记录数</label>
-                            <input type="number" id="cfg_page_size" min="5" max="100" placeholder="20">
-                            <small>查询结果每页显示的记录数量（5-100）</small>
-                        </div>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-save"></i> 保存配置
-                        </button>
-                    </form>
-                    <div class="save-result" id="paginationResult" style="display:none"></div>
+        <!-- 分页配置 -->
+        <section class="tab-content" id="tab-pagination">
+            <div class="card glass">
+                <div class="card-header">
+                    <h3><i class="fas fa-list-ol"></i> 查询结果分页</h3>
                 </div>
-            </section>
-        </main>
+                <form id="paginationForm">
+                    <div class="form-group">
+                        <label>每页显示记录数</label>
+                        <input type="number" id="cfg_page_size" min="5" max="100" placeholder="20">
+                        <small>查询结果每页显示的记录数量（5-100）</small>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        <span>保存配置</span>
+                    </button>
+                </form>
+                <div class="save-result" id="paginationResult" style="display:none"></div>
+            </div>
+        </section>
     </div>
 
     <script src="/static/admin/admin.js"></script>

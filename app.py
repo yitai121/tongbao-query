@@ -175,18 +175,20 @@ def api_query():
         per_page = int(get_config("page_size", "20"))
 
     # 判断是否为管理员（管理员可查看完整数据，普通用户仅查看最近7天）
-    is_admin = is_logged_in()
+    is_admin = session.get("admin_logged_in", False)
     days_limit = None if is_admin else 7
 
-    # 查询明细
+    # 查询明细（数据库层面限制7天）
     all_records = get_rewards_by_phone(phone, days_limit=days_limit)
 
-    # 生成完整日期范围（从2026-06-03到今天，或最近7天）
-    start_date = datetime(2026, 6, 3)
+    # 生成完整日期范围
     end_date = datetime.now()
-
     if days_limit:
+        # 普通用户：最近7天
         start_date = end_date - timedelta(days=days_limit - 1)
+    else:
+        # 管理员：从2026-06-03开始
+        start_date = datetime(2026, 6, 3)
 
     # 创建日期到记录的映射
     record_map = {r["record_date"]: r for r in all_records}
