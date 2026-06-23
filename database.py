@@ -79,33 +79,58 @@ def upsert_reward(phone, reward, record_date):
     conn.close()
 
 
-def get_rewards_by_phone(phone):
-    """根据手机号查询所有奖励记录"""
+def get_rewards_by_phone(phone, days_limit=None):
+    """根据手机号查询奖励记录
+
+    Args:
+        phone: 手机号
+        days_limit: 可选，限制最近N天的记录。None表示不限制
+    """
     conn = get_db()
     cursor = conn.cursor()
 
-    cursor.execute("""
-        SELECT phone, reward, record_date, created_at, updated_at
-        FROM rewards
-        WHERE phone = ?
-        ORDER BY record_date DESC
-    """, (phone,))
+    if days_limit:
+        cursor.execute("""
+            SELECT phone, reward, record_date, created_at, updated_at
+            FROM rewards
+            WHERE phone = ? AND record_date >= date('now', ?)
+            ORDER BY record_date DESC
+        """, (phone, f"-{days_limit} days"))
+    else:
+        cursor.execute("""
+            SELECT phone, reward, record_date, created_at, updated_at
+            FROM rewards
+            WHERE phone = ?
+            ORDER BY record_date DESC
+        """, (phone,))
 
     rows = cursor.fetchall()
     conn.close()
     return [dict(row) for row in rows]
 
 
-def get_total_reward_by_phone(phone):
-    """根据手机号查询总奖励"""
+def get_total_reward_by_phone(phone, days_limit=None):
+    """根据手机号查询总奖励
+
+    Args:
+        phone: 手机号
+        days_limit: 可选，限制最近N天的记录。None表示不限制
+    """
     conn = get_db()
     cursor = conn.cursor()
 
-    cursor.execute("""
-        SELECT COALESCE(SUM(reward), 0) as total, COUNT(*) as days
-        FROM rewards
-        WHERE phone = ?
-    """, (phone,))
+    if days_limit:
+        cursor.execute("""
+            SELECT COALESCE(SUM(reward), 0) as total, COUNT(*) as days
+            FROM rewards
+            WHERE phone = ? AND record_date >= date('now', ?)
+        """, (phone, f"-{days_limit} days"))
+    else:
+        cursor.execute("""
+            SELECT COALESCE(SUM(reward), 0) as total, COUNT(*) as days
+            FROM rewards
+            WHERE phone = ?
+        """, (phone,))
 
     row = cursor.fetchone()
     conn.close()

@@ -176,8 +176,12 @@ def api_query():
     if per_page <= 0:
         per_page = int(get_config("page_size", "20"))
 
+    # 判断是否为管理员（管理员可查看完整数据，普通用户仅查看最近7天）
+    is_admin = is_logged_in()
+    days_limit = None if is_admin else 7
+
     # 查询明细
-    all_records = get_rewards_by_phone(phone)
+    all_records = get_rewards_by_phone(phone, days_limit=days_limit)
     total = len(all_records)
 
     # 分页
@@ -189,7 +193,7 @@ def api_query():
         records = all_records
 
     # 查询汇总
-    summary = get_total_reward_by_phone(phone)
+    summary = get_total_reward_by_phone(phone, days_limit=days_limit)
 
     if not all_records:
         return jsonify({
